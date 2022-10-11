@@ -25,18 +25,21 @@ context.failed = False
 
 class TryError(Exception):
     """Try specific exception."""
+
     def __init__(self, msg):
         super(TryError, self).__init__(msg)
         context.failed = True
 
 
-def try_packages(packages, virtualenv=None, python_version=None, shell=None, use_editor=False, keep=False, tmpdir_base=None, index=None):
+def try_packages(packages, virtualenv=None, python_version=None, shell=None,
+                 use_editor=False, keep=False, tmpdir_base=None, index=None):
     """Try a python package with a specific python version.
 
     The python version must already be installed on the system.
 
     :param str package: the name of the package to try.
-    :param str virtualenv: the path to the virtualenv to use. If None a new one is created.
+    :param str virtualenv: the path to the virtualenv to use.
+                           If None a new one is created.
     :param str python_version: the python version for the interpreter.
     :param str shell: use different shell then default python shell.
     :param bool use_editor: use editor instead of interpreter.
@@ -55,10 +58,12 @@ def try_packages(packages, virtualenv=None, python_version=None, shell=None, use
 
             if not use_editor:
                 shell = shell if shell else "python"
-                with use_import([p.import_name for p in packages]) as startup_script:
+                pk = [p.import_name for p in packages]
+                with use_import() as startup_script:
                     run_shell(shell, startup_script)
             else:
-                with use_template([p.import_name for p in packages]) as template:
+                pk = [p.import_name for p in packages]
+                with use_template(pk) as template:
                     run_editor(template)
         return tmpdir
 
@@ -76,7 +81,8 @@ def use_temp_directory(tmpdir_base=None, keep=False):
     try:
         path = tempfile.mkdtemp(prefix=prefix)
         context.tempdir_path = path
-        context.logfile = os.path.join(context.tempdir_path, "logs")
+        ctx = context.tempdir_path
+        context.logfile = os.path.join(ctx, "logs")
         yield path
     finally:
         if not keep and not context.failed:
@@ -91,12 +97,14 @@ def use_virtualenv(virtualenv, python_version):
         if virtualenv:
             # check if given directory is a virtualenv
             if not os.path.join(virtualenv, "bin/activate"):
-                raise TryError("Given directory {0} is not a virtualenv.".format(virtualenv))
+                raise TryError("Given directory {0} \
+                                is not a virtualenv.".format(virtualenv))
 
             context.virtualenv_path = virtualenv
             yield True
         else:
-            args = ["virtualenv", "env", "-p", python_version, ">>", context.logfile]
+            args = ["virtualenv", "env", "-p",
+                    python_version, ">>", context.logfile]
             proc = Popen(args, shell=False, cwd=context.tempdir_path)
             context.virtualenv_path = os.path.join(context.tempdir_path, "env")
             yield proc.wait() == 0
@@ -130,12 +138,14 @@ def use_template(packages):
     :returns: the path to the created template file
     :rtype: str
     """
-    with open(os.path.join(os.path.dirname(__file__), "script.template")) as template_file:
+    with open(os.path.join(os.path.dirname(__file__),
+                           "script.template")) as template_file:
         template = template_file.read()
 
     template_path = os.path.join(context.tempdir_path, "main.py")
     with open(template_path, "w+") as template_file:
-        template_file.write(template.format("\n".join("import {0}".format(p) for p in packages)))
+        template_file.write(template.format("\n".join("import {0}\
+                                            ".format(p) for p in packages)))
     yield template_path
 
 
@@ -148,9 +158,11 @@ def pip_install(package, index=None):
 def run_shell(shell, startup_script):
     """Run specific python shell."""
     if system() == "Windows":
-        exec_in_virtualenv("PYTHONSTARTUP={0} && {1}".format(startup_script, shell))
+        exec_in_virtualenv("PYTHONSTARTUP={0} && {1}\
+                            ".format(startup_script, shell))
     else:
-        exec_in_virtualenv("PYTHONSTARTUP={0} {1}".format(startup_script, shell))
+        exec_in_virtualenv("PYTHONSTARTUP={0} {1}\
+                            ".format(startup_script, shell))
 
 
 def run_editor(template_path):

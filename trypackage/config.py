@@ -53,10 +53,24 @@ def parse_config(configfile):
     parser.read(configfile)
 
     config = {
-        "python": get_option(parser.get, "env", "python"),
-        "shell": get_option(parser.get, "env", "shell"),
-        "keep": get_option(parser.getboolean, "env", "keep", default=False),
-        "use_editor": get_option(parser.getboolean, "env", "always_use_editor", default=False),
-        "tmpdir": os.path.expanduser(os.path.expandvars(get_option(parser.get, "env", "tmpdir", default="")))
+        "python": get_option(
+            parser.get, "env", "python"
+        ),
+        "shell": get_option(
+            parser.get, "env", "shell"
+        ),
+        "keep": get_option(
+            parser.getboolean, "env", "keep", default=False
+        ),
+        "use_editor": get_option(
+            parser.getboolean, "env", "always_use_editor", default=False
+        ),
+        "tmpdir": os.path.expanduser(
+            os.path.expandvars(
+                get_option(
+                    parser.get, "env", "tmpdir", default=""
+                )
+            )
+        )
     }
     return config
