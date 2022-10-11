@@ -96,7 +96,7 @@ def use_virtualenv(virtualenv, python_version):
             context.virtualenv_path = virtualenv
             yield True
         else:
-            args=["virtualenv","env","-p",python_version,">>",context.logfile]
+            args = ["virtualenv", "env", "-p", python_version, ">>", context.logfile]
             proc = Popen(args, shell=False, cwd=context.tempdir_path)
             context.virtualenv_path = os.path.join(context.tempdir_path, "env")
             yield proc.wait() == 0
@@ -161,14 +161,15 @@ def run_editor(template_path):
 
 def exec_in_virtualenv(command):
     """Execute command in virtualenv."""
+    ctx = context.virtualenv_path
     if system() == "Windows":
         if command.startswith("PYTHONSTARTUP"):
-            args=[context.virtualenv_path+"/Scripts/activate && set "+command]
+            args = [ctx+"/Scripts/activate", "set "+command]
         else:
-            args=[context.virtualenv_path+"/Scripts/activate && "+command]
+            args = [ctx+"/Scripts/activate", command]
     else:
-        args=[".",context.virtualenv_path+"/Scripts/activate && "+command]
+        args = [".", ctx+"/Scripts/activate", command]
     proc = Popen(args, shell=False)
     if proc.wait() != 0:
-        raise TryError("Command '{0}' exited with error code: {1}. See {2}".format(
-            command, proc.returncode, context.logfile))
+        raise TryError("Command '{0}' exited with error code: \
+        {1}. See {2}".format(command, proc.returncode, context.logfile))
