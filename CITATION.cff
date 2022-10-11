@@ -1,0 +1,10 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Try IBERGRID2022
+message: 'This is a test, nevermind trying that.'
+type: software
+authors:
+  - given-names: Ricardo Martins
+    email: example@example.com
